@@ -1,0 +1,102 @@
+﻿@page "/"
+@using Models
+@using Algorithms
+<div id ="header">
+    <select id="algorithmSelector" @bind="algorithmType">
+        @foreach( var x in algorithmOptions)
+        {
+            <option value="@x.name">@x.displayName</option>
+        }        
+    </select>
+    <div id="amountContainer">
+        <span>
+            <span>length</span>
+            <span>@arrayLength</span>
+        </span>
+        <input type="range" min="10" max="100" class="slider" id="arrayLength" @bind="arrayLength" @bind:event="oninput" />
+    </div>
+    <button class="btn" @onclick="addNewSort">Add new sort</button>
+</div>
+<div id ="sortingBoxContainer">
+    @foreach (sortBoxParams box in sortingboxes)
+    {
+        <SortingBox description="@box.description" arrayLen="@box.arrayLen" sortName="@box.sortName" @key="@box.id" id="@box.id" algorithm="@box.algorithm" closeSelf="close"></SortingBox>
+    }
+</div>
+
+
+@code {
+    private float arrayLength = 50;
+    private List<sortBoxParams> sortingboxes = new List<sortBoxParams> { };
+    private int idCount = 0;
+    private Func <List<int>,IEnumerable<SortStep>> selectedAlgorithm = SortingAlgorythms.BubbleSort;
+    private string algorithmDescription = "No Description Available";
+    private string algorithmName = "No Name Available";
+    private string algorithmType { get; set;} = "Bubble";
+
+
+    public void close(int id)
+    {
+        sortingboxes.RemoveAll(box => box.id == id);
+        StateHasChanged();
+    }
+    private void addNewSort()
+    {
+        getAlgorithmDetails(algorithmType);
+        var box = new sortBoxParams(algorithmDescription, algorithmName,(int)arrayLength,idCount,selectedAlgorithm);
+        idCount += 1;
+        sortingboxes.Add(box);
+    }
+    // list for the select element 
+    private List<(string name, string displayName)> algorithmOptions = new List<(string name, string displayName)>
+    {
+        ("Bubble","Bubble Sort"),
+        ("Insertion","Insertion Sort"),
+        ("Merge","Merge Sort"),
+        ("Quick","Quick Sort"),
+        ("Selection","Selection Sort")
+    };
+    // provides instances variables based on the select element
+    private void getAlgorithmDetails(string name)
+    {
+        switch (name)
+        {
+            case "Bubble":
+                selectedAlgorithm = SortingAlgorythms.BubbleSort;
+                algorithmDescription = "Compares adjacent values and swaps the greator one up, this will bubble the largest values to the end of the array";
+                algorithmName = "Bubble Sort";
+                break;
+            case "Insertion":
+                selectedAlgorithm = SortingAlgorythms.InsertionSort;
+                algorithmDescription = "Activily build a sorted subArray and for each value insert it where it belongs in the sorted subArray. In this implementation I use a ArrayList so Insertion is slow but in can also be implemnted using a linkedlist to reduce insertion time as such each insertion is counted as a single swap";
+                algorithmName = "Insertion Sort";
+                break;
+            case "Selection":
+                selectedAlgorithm = SortingAlgorythms.SelectionSort;
+                algorithmDescription = "Searches the array for the smallest value and then swaps it to front of the array.";
+                algorithmName = "Selection Sort";
+                break;
+            case "Merge":
+                selectedAlgorithm = SortingAlgorythms.MergeSort;
+                algorithmDescription = "breaks list into sublists then recursivly merges them together";
+                algorithmName = "Merge Sort";
+                break;
+            case "Quick":
+                selectedAlgorithm = SortingAlgorythms.QuickSort;
+                algorithmDescription = "Sorts all elements around a pivot then repeats for left and right subarrays";
+                algorithmName = "Quick Sort";
+                break;
+            default:
+                selectedAlgorithm = SortingAlgorythms.BubbleSort;
+                algorithmDescription = "Algorithm selection had an error so defaulting to bubble sort";
+                algorithmName = "Default Bubble";
+                break;
+        }
+    }
+
+    public record sortBoxParams(string description, string sortName, int arrayLen, int id, Func<List<int>, IEnumerable<SortStep>> algorithm);
+
+
+
+
+}

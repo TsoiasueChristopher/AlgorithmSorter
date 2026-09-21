@@ -1,0 +1,98 @@
+﻿#startingValues {
+    display: flex;
+    justify-content: left;
+    align-items: baseline;
+    gap: 2rem;
+    margin: 0 1rem;
+    flex-wrap: wrap;
+    row-gap: 0rem
+}
+
+
+h1:hover, h2:hover {
+    cursor: default;
+}
+
+
+#sortContainer {
+    margin: 2rem 2rem;
+    background: #1e1e2e;
+    border: black;
+    border-radius: 2rem;
+    color: white;
+}
+
+
+
+#speedContainer {
+    display: grid;
+    max-width: 10rem;
+    margin: 0 1rem;
+}
+
+#buttons {
+    gap: .2rem;
+    display: flex;
+    justify-content: left;
+}
+
+#sortHeader {
+    background: gray;
+    border-radius: inherit;
+}
+
+#sortDetails {
+    height: 300px;
+}
+
+.gridContainer{
+    height: 90%;
+    display: grid;
+    grid-auto-flow: column;
+    margin: 2rem 2rem;
+}
+
+.sortBlock {
+    background: white;
+    align-self: end;
+}
+
+.blockBorder {
+    padding: 10%;
+    display: grid;
+}
+
+.highlight-compare {
+    background: red !important;
+}
+
+.highlight-swap {
+    background: green !important;
+}
+
+.highlight-pivot {
+    background: blue !important;
+}
+/* small screen resizing */
+@media screen and (max-width:600px){
+    #speedContainer{
+        max-width:none;
+        width: 100%;
+
+    }
+    .btn {
+        flex-grow: 1;
+    }
+    .text_1 {
+        font-size: medium;
+    }
+
+    .algorithmName {
+        font-size: large;
+    }
+
+    #buttons {
+        display: flex;
+        flex-wrap: wrap;
+    }
+}

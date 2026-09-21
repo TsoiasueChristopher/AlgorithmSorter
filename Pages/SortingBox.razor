@@ -1,0 +1,186 @@
+﻿@using SortingVisualizer.Algorithms
+@using SortingVisualizer.Models
+
+
+<div id="sortContainer">
+    <div id="sortHeader">
+        <div id="startingValues">
+            <h1 class="algorithmName" title="@description">@sortName</h1>
+            <h2 class="text_1">@arrayLen values</h2>
+            <h2 class="text_1">@comparisons Comparisons</h2>
+            <h2 class="text_1">@swaps Swaps</h2>
+            @if (isSorted)
+            {
+                <h2 class="text_1">Sorted!</h2>
+            }
+            else
+            {
+                <h2 class="text_1">Unsorted :( </h2>
+            }
+        </div>
+        <div id="buttons">
+            <div id="speedContainer">
+                <span>
+
+                    <span>SPEED: </span>
+                    <span>@speed</span>
+                </span>
+                <input type="range" min ="1" max="100"  class="slider" id="speed" @bind="speed" @bind:event="oninput"/>
+            </div> 
+            @if (!isRuning)
+            {
+                <button id="Start" class="btn" @onclick="Start">start</button>
+                <button id="Start" class="btn" @onclick="Shuffle">shuffle</button>
+
+            }
+            else
+            {
+                <button id="Pause" class="btn" @onclick="TogglePause">@(isPaused ? "Resume" : "Pause") </button>
+                <button id="Pause" class="btn" @onclick="Reset">Reset</button>
+            }
+
+            <button id="Pause" class="btn" @onclick="Close">close</button>
+
+        </div>
+    </div>
+    <div id="sortDetails">
+        <div class="gridContainer">
+            @for (int idx = 0; idx < values.Count(); idx++)
+            {
+                var val = values[idx];
+                float heightPercent = (val / (float)maxHeight) * 100;
+                var highlightclass = (idx == highlight1 || idx == highlight2 )? $"highlight-{curentStep.ToString().ToLower()}" : "";
+                <div class="blockBorder">
+                    <div class="sortBlock @highlightclass" style="height:@(heightPercent)%"></div>
+                </div>
+            }
+        </div>
+
+
+    </div>
+</div>
+
+@code {
+    #region defining instance varables and peramaters
+
+    private float speed = 5; //steps per seccond
+
+    private bool isRuning = false;
+    private bool isPaused = false;
+    private bool isSorted = false;
+    private int highlight1 = -1;
+    private int highlight2 = -1;
+    private int comparisons = 0;
+    private int swaps = 0;
+    private StepType curentStep = StepType.Sorted;
+
+
+    private List<int> values = new List<int> { 1, 2, 3, 4, 5, 6 };
+    private int maxHeight = 0;
+    private IEnumerable<SortStep>? sorter;
+    private CancellationTokenSource? cts;
+    //peramater passed from parent
+    [Parameter]
+    public string description { get; set; } = "No Description Availible";
+    [Parameter]
+    public string sortName { get; set; } = "No Name Availible";
+    [Parameter]
+    public int arrayLen { get; set; } = 10;
+    [Parameter]
+    public Func<List<int>, IEnumerable<SortStep>> algorithm{ get; set; } = SortingAlgorythms.BubbleSort;
+    [Parameter]
+    public EventCallback<int> closeSelf { get; set; }
+    [Parameter]
+    public int id { get; set; }
+
+
+
+
+
+
+    #endregion
+    #region button functions
+    private async Task Start()
+    {
+        isRuning = true;
+        isPaused = false;
+        isSorted = false;
+        sorter = algorithm(values);
+        cts = new CancellationTokenSource();
+        comparisons = 0;
+        swaps = 0;
+        try
+        {
+            foreach (SortStep step in sorter)
+            {   
+                //code to stop when paused and exit if canceled
+                if(cts.Token.IsCancellationRequested)
+                    break;
+                while(isPaused && !cts.IsCancellationRequested)
+                    await Task.Delay(50, cts.Token);
+                curentStep = step.type;
+                highlight1 = step.index1;
+                highlight2 = step.index2;
+                if(curentStep == StepType.Compare)
+                {
+                    comparisons++;
+                }else if(curentStep == StepType.Swap)
+                {
+                    swaps++;
+                }
+
+                StateHasChanged();
+                await Task.Delay((int)(1000/(speed)), cts.Token);
+            }
+            if (!cts.IsCancellationRequested)
+            {
+                isSorted = true;
+                highlight1 = -1;
+                highlight2 = -1;
+            }
+        }catch(TaskCanceledException){}
+
+        isRuning = false;
+        StateHasChanged();
+
+    }
+    private void TogglePause()
+    {
+        isPaused = !isPaused;
+
+    }
+    private void Reset()
+    {
+        cts.Cancel();
+        Shuffle();  
+        isRuning = false;
+        isPaused = true;
+        comparisons = 0;
+        swaps = 0;
+        highlight1 = -1;
+        highlight2 = -1;
+        
+    }
+    private void Shuffle()
+    {
+        values = values.OrderBy(i => Random.Shared.Next()).ToList();
+
+    }
+    private void Close()
+    {
+        closeSelf.InvokeAsync(id);
+    }
+    #endregion
+    #region helperFunctions
+
+    #endregion
+    #region start up
+    protected override void OnInitialized()
+    {
+        values = Enumerable.Range(1, arrayLen).ToList();
+        Shuffle();
+        maxHeight = arrayLen;
+
+    }
+    #endregion
+}
