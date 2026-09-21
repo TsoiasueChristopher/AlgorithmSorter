@@ -73,6 +73,12 @@ h1:hover, h2:hover {
 .highlight-pivot {
     background: blue !important;
 }
+.text_1 {
+    font-size:larger;
+}
+.algorithmName {
+    font-size: x-large;
+}
 /* small screen resizing */
 @media screen and (max-width:600px){
     #speedContainer{
@@ -82,13 +88,6 @@ h1:hover, h2:hover {
     }
     .btn {
         flex-grow: 1;
-    }
-    .text_1 {
-        font-size: medium;
-    }
-
-    .algorithmName {
-        font-size: large;
     }
 
     #buttons {
